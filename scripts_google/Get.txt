@@ -1,0 +1,40 @@
+function getData(spreadsheetId, sheet) {
+  var rangeName = sheet+'!A:Z'
+  var values = Sheets.Spreadsheets.Values.get(spreadsheetId, rangeName).values
+
+  if(!values) {
+    return {
+      error: "Not found data"
+    } 
+  } else {
+      var responseJson = []
+      for(var row = 1; row < values.length; row++) {
+        var item = { }
+
+        for(var column = 0; column < 26; column++) {
+          item[values[0][column]] = values[row][column]
+        }
+
+        responseJson.push(item)
+      }
+
+      return responseJson
+    }
+}
+
+function doGet(request) {
+  if(request.parameter.spreadsheetId !== undefined && request.parameter.sheet !== undefined) {
+    return ContentService.createTextOutput(JSON.stringify(
+      {
+        personal: getData(request.parameter.spreadsheetId, request.parameter.sheet)
+      }
+    ))
+    .setMimeType(ContentService.MimeType.JSON)
+  } else {
+    return ContentService.createTextOutput(JSON.stringify(
+      {
+        error: "Parameter spreadsheetId or Sheet not found"
+      }
+    ))
+  }
+}
